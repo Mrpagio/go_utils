@@ -47,3 +47,19 @@ func BytesAsBinaryString(data ...byte) string {
 	str = strings.TrimSpace(str)
 	return str
 }
+
+// XorBytes
+// Prende in input due array di byte
+// controlla che abbiano la stessa lunghezza
+// Esegue l'operazione di XOR tra i due array
+// Ritorna l'array risultante
+func XorBytes(a, b []byte) ([]byte, error) {
+	if len(a) != len(b) {
+		return nil, fmt.Errorf("a e b devono avere la stessa lunghezza")
+	}
+	res := make([]byte, len(a))
+	for i := range a {
+		res[i] = a[i] ^ b[i]
+	}
+	return res, nil
+}
