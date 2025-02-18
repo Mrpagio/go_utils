@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
-// LeftPad***
+// LeftPad
 // prende in input una stringa
 // la lunghezza della stringa finale
 // il padding da aggiungere
@@ -24,5 +25,21 @@ func LeftPad(str string, length int, pad string) (string, error) {
 	}
 	padding := strings.Repeat(pad, diffLen/len(pad))
 	res := padding + str
+	return res, nil
+}
+
+// IntLeftPad
+// prende in input un intero
+// la lunghezza della stringa finale
+// il padding da aggiungere
+// restituisce la stringa finale
+func IntLeftPad(val int, length int, pad string) (string, error) {
+	// Converto l'intero in stringa
+	t := strconv.Itoa(val)
+	// Chiamo la funzione LeftPad
+	res, err := LeftPad(t, length, pad)
+	if err != nil {
+		return "", err
+	}
 	return res, nil
 }
