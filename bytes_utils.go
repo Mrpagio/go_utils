@@ -63,3 +63,21 @@ func XorBytes(a, b []byte) ([]byte, error) {
 	}
 	return res, nil
 }
+
+//ReplaceBytes
+// funzione per sostituire i byte in un array di byte
+func ReplaceBytes(data *[]byte, strartIdx int, values ...byte) error {
+	var str string
+	if strartIdx < 0 {
+		str = fmt.Sprintf("strartIdx è minore di 0")
+		return fmt.Errorf(str)
+	}
+	if strartIdx+len(values) > len(*data) {
+		str = fmt.Sprintf("strartIdx + len(values) è maggiore della lunghezza di data")
+		return fmt.Errorf(str)
+	}
+	for i, v := range values {
+		(*data)[strartIdx+i] = v
+	}
+	return nil
+}
