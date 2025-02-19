@@ -68,21 +68,25 @@ func XorBytes(a, b []byte) ([]byte, error) {
 // prende il puntatore a un array di byte nel quale sostituire i valori
 // l'indice di partenza
 // i valori da sostituire
-// restituisce un errore se l'indice di partenza è minore di 0 o se l'indice di partenza + la lunghezza dei valori da sostituire è maggiore della lunghezza dell'array
-func ReplaceBytes(data *[]byte, strartIdx int, values ...byte) error {
+// restituisce:
+// un intero che corrisponde al numero di byte scritti
+// un errore se l'indice di partenza è minore di 0 o se l'indice di partenza + la lunghezza dei valori da sostituire è maggiore della lunghezza dell'array
+func ReplaceBytes(data *[]byte, startIdx int, values ...byte) (int, error) {
 	var str string
-	if strartIdx < 0 {
+	if startIdx < 0 {
 		str = fmt.Sprintf("strartIdx è minore di 0")
-		return fmt.Errorf(str)
+		return 0, fmt.Errorf(str)
 	}
-	if strartIdx+len(values) > len(*data) {
+	if startIdx+len(values) > len(*data) {
 		str = fmt.Sprintf("strartIdx + len(values) è maggiore della lunghezza di data")
-		return fmt.Errorf(str)
+		return 0, fmt.Errorf(str)
 	}
-	for i, v := range values {
-		(*data)[strartIdx+i] = v
+	i := 0
+	v := byte(0)
+	for i, v = range values {
+		(*data)[startIdx+i] = v
 	}
-	return nil
+	return i, nil
 }
 
 // func ConcatBytes
@@ -94,4 +98,30 @@ func ConcatArrBytes(outData *[]byte, values ...*[][]byte) {
 			*outData = append(*outData, v...)
 		}
 	}
+}
+
+// ReplaceArrayBytes
+// prende in ingresso un puntatore a un array di byte nel quale sostituire i valori (di dimensione sufficiente, oltre startIdx, per contenere i valori da sostituire)
+// prende in ingresso un array di array di byte da sostituire
+// prende in ingresso la lunghezza totale dei byte da sostituire
+// prende in ingresso l'indice di partenza
+func ReplaceArrayBytes(output *[]byte, values [][]byte, lenBytesToReplace int, startIdx int) (int, error) {
+	// variabile tenere traccia dei byte sostituiti
+	replacedBytes := 0
+	// ciclo per la lunghezza dei dati
+	for i, bytes := range values {
+		temp, err := ReplaceBytes(output, startIdx+replacedBytes, bytes...)
+		if err != nil {
+			str := fmt.Sprintf("ReplaceArrayBytes() -> %d: %s", i, err.Error())
+			replacedBytes += temp
+			return replacedBytes, fmt.Errorf(str)
+		}
+		replacedBytes += temp
+	}
+	// controllo che i byte sostituiti siano uguali alla lunghezza totale dei byte da sostituire
+	if replacedBytes != lenBytesToReplace {
+		str := fmt.Sprintf("ReplaceArrayBytes() -> replacedBytes != lenBytesToReplace: %d != %d", replacedBytes, lenBytesToReplace)
+		return replacedBytes, fmt.Errorf(str)
+	}
+	return replacedBytes, nil
 }
