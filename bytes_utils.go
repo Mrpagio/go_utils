@@ -90,6 +90,18 @@ func ReplaceBytes(data *[]byte, startIdx int, values ...byte) (int, error) {
 	return i, nil
 }
 
+// func IsAllZero
+// prende in ingresso un array di byte
+// restituisce true se tutti i byte sono uguali a 0
+func IsAllZero(data []byte) bool {
+	for _, b := range data {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // func ConcatBytes
 // prende in ingresso "outData" un puntatore a un array di byte
 // prende in ingresso "values" un puntatore array di array di byte
