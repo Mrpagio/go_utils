@@ -88,8 +88,10 @@ func ReplaceBytes(data *[]byte, strartIdx int, values ...byte) error {
 // func ConcatBytes
 // prende in ingresso "outData" un puntatore a un array di byte
 // prende in ingresso "values" un puntatore array di array di byte
-func ConcatBytes(outData *[]byte, values ...*[]byte) {
-	for _, v := range values {
-		*outData = append(*outData, *v...)
+func ConcatArrBytes(outData *[]byte, values ...*[][]byte) {
+	for _, arr := range values {
+		for _, v := range *arr {
+			*outData = append(*outData, v...)
+		}
 	}
 }
