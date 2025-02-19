@@ -64,8 +64,11 @@ func XorBytes(a, b []byte) ([]byte, error) {
 	return res, nil
 }
 
-//ReplaceBytes
-// funzione per sostituire i byte in un array di byte
+// ReplaceBytes
+// prende il puntatore a un array di byte nel quale sostituire i valori
+// l'indice di partenza
+// i valori da sostituire
+// restituisce un errore se l'indice di partenza è minore di 0 o se l'indice di partenza + la lunghezza dei valori da sostituire è maggiore della lunghezza dell'array
 func ReplaceBytes(data *[]byte, strartIdx int, values ...byte) error {
 	var str string
 	if strartIdx < 0 {
@@ -80,4 +83,13 @@ func ReplaceBytes(data *[]byte, strartIdx int, values ...byte) error {
 		(*data)[strartIdx+i] = v
 	}
 	return nil
+}
+
+// func ConcatBytes
+// prende in ingresso "outData" un puntatore a un array di byte
+// prende in ingresso "values" un array di array di byte
+func ConcatBytes(outData *[]byte, values ...[]byte) {
+	for _, v := range values {
+		*outData = append(*outData, v...)
+	}
 }
