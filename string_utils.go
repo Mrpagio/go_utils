@@ -73,5 +73,5 @@ func XorHex(a, b string) (string, error) {
 		return "", err
 	}
 	// converto il risultato in stringa
-	return ByteArrayToHex(res), nil
+	return BytesToHex(res), nil
 }
