@@ -83,8 +83,9 @@ func ReplaceBytes(data *[]byte, startIdx int, values ...byte) (int, error) {
 	}
 	i := 0
 	v := byte(0)
-	for i, v = range values {
+	for _, v = range values {
 		(*data)[startIdx+i] = v
+		i++
 	}
 	return i, nil
 }
