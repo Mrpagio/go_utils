@@ -24,10 +24,10 @@ func HexToByteArray(hex string) ([]byte, error) {
 	return res, nil
 }
 
-// ByteArrayToHex
-// prende in input un array di byte
+// BytesToHex
+// prende in input uno o più byte
 // restituisce la stringa "esadecimale" corrispondente con spazi tra i byte
-func ByteArrayToHex(arr []byte) string {
+func BytesToHex(arr ...byte) string {
 	str := ""
 	for i := 0; i < len(arr); i++ {
 		str += fmt.Sprintf("%02X ", arr[i])
