@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -148,4 +149,31 @@ func ReplaceArrayBytes(output *[]byte, values [][]byte, lenBytesToReplace int, s
 		return replacedBytes, fmt.Errorf(str)
 	}
 	return replacedBytes, nil
+}
+
+func SplitNWithIndex(inputBytes []byte, sep []byte, n int) ([][]byte, int) {
+	// creo un array di array di byte
+	res := make([][]byte, n)
+	// creo una variabile temporanea in cui salvo le porzioni di byte
+	tempArray := make([][]byte, 0)
+	// creo una variabile temporanea per il singolo array di byte
+	temp := make([]byte, 0)
+	// creo una variabile temporanea per tenere traccia della lunghezza totale degli elementi in res
+	totalLen := 0
+	// creo una variabile per controllare di non uscire dall'array
+	actualIdx := 0
+	// ciclo per il numero di ripezioni da trovare
+	for i := 0; i < n; i++ {
+		tempArray = bytes.SplitN(inputBytes[actualIdx:], sep, 1)
+		temp = tempArray[0]
+		// controllo che temp non sia vuoto
+		if len(temp) == 0 {
+			return nil, 0
+		}
+		// aggiungo temp a res
+		res[i] = temp
+		// aggiorno la lunghezza totale
+		totalLen += len(temp)
+	}
+	return res, totalLen
 }
