@@ -175,5 +175,6 @@ func SplitNWithIndex(inputBytes []byte, sep []byte, n int) ([][]byte, int) {
 		// aggiorno la lunghezza totale
 		totalLen += len(temp)
 	}
+	fmt.Println("totalLen: ", totalLen)
 	return res, totalLen
 }
