@@ -167,3 +167,31 @@ func PackLittleEndianBlocks(data []byte) []uint64 {
 	}
 	return resBlocks
 }
+
+func PackBigEndian(data []byte) uint64 {
+	return binary.BigEndian.Uint64(data)
+}
+
+func PackBigEndianBlocks(data []byte) []uint64 {
+	var resBlocks []uint64
+	for i := 0; i < len(data); i += 8 {
+		block := data[i:min(i+8, len(data))]
+		resBlocks = append(resBlocks, PackBigEndian(block))
+	}
+	return resBlocks
+}
+
+func UnpackLittleEndian(data uint64, size int) []byte {
+	unpacked := make([]byte, size)
+	binary.LittleEndian.PutUint64(unpacked, data)
+	return unpacked
+}
+
+func UnpackLittleEndianBlocks(data []uint64, totalLen int) []byte {
+	var res []byte
+	for i := 0; i < len(data); i += 8 {
+		block := UnpackLittleEndian(data[i], min(8, totalLen-i))
+		res = append(res, block...)
+	}
+	return res
+}
