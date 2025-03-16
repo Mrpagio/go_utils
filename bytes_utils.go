@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/binary"
 	"fmt"
 	"strings"
 )
@@ -148,4 +149,21 @@ func ReplaceArrayBytes(output *[]byte, values [][]byte, lenBytesToReplace int, s
 		return replacedBytes, fmt.Errorf(str)
 	}
 	return replacedBytes, nil
+}
+
+func PackLittleEndian(data []byte) uint64 {
+	packed := make([]byte, len(data))
+	for i := 0; i < len(data); i++ {
+		packed[i] = data[len(data)-1-i]
+	}
+	return binary.LittleEndian.Uint64(packed)
+}
+
+func PackLittleEndianBlocks(data []byte) []uint64 {
+	var resBlocks []uint64
+	for i := 0; i < len(data); i += 8 {
+		block := data[i:min(i+8, len(data))]
+		resBlocks = append(resBlocks, PackLittleEndian(block))
+	}
+	return resBlocks
 }
