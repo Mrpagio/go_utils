@@ -195,3 +195,18 @@ func UnpackLittleEndianBlocks(data []uint64, totalLen int) []byte {
 	}
 	return res
 }
+
+func UnpackBigEndian(data uint64, size int) []byte {
+	unpacked := make([]byte, size)
+	binary.BigEndian.PutUint64(unpacked, data)
+	return unpacked
+}
+
+func UnpackBigEndianBlocks(data []uint64, totalLen int) []byte {
+	var res []byte
+	for i := 0; i < len(data); i += 8 {
+		block := UnpackBigEndian(data[i], min(8, totalLen-i))
+		res = append(res, block...)
+	}
+	return res
+}
