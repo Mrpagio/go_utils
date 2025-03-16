@@ -210,3 +210,14 @@ func UnpackBigEndianBlocks(data []uint64, totalLen int) []byte {
 	}
 	return res
 }
+
+func SanitizeUint64Array(dataArray []uint64, startIdx int, length int) []uint64 {
+	inputBytesLen := len(dataArray) * 8
+	fmt.Println("inputBytesLen: ", inputBytesLen)
+	lastBit := startIdx + length - 1
+	fmt.Println("lastBit: ", lastBit)
+	lastByte := lastBit / 8
+	fmt.Println("lastByte: ", lastByte)
+
+	return dataArray[startIdx : startIdx+lastByte]
+}
