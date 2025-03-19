@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -211,13 +212,231 @@ func UnpackBigEndianBlocks(data []uint64, totalLen int) []byte {
 	return res
 }
 
+/*
 func SanitizeUint64Array(dataArray []uint64, startIdx int, length int) []uint64 {
+	if length == 0 {
+		fmt.Println("length is 0")
+		return []uint64{}
+	}
 	inputBytesLen := len(dataArray) * 8
-	fmt.Println("inputBytesLen: ", inputBytesLen)
-	lastBit := startIdx + length - 1
-	fmt.Println("lastBit: ", lastBit)
-	lastByte := lastBit / 8
-	fmt.Println("lastByte: ", lastByte)
+	if inputBytesLen == 0 {
+		fmt.Println("inputBytesLen is 0")
+		return []uint64{}
+	}
 
-	return dataArray[startIdx : startIdx+lastByte]
+	// variabile con cui calcolare il numero di bit da shiftare
+	leftShiftBits := 0
+
+	res, err := CropUint64Array(dataArray, startIdx, length)
+	if err != nil {
+		fmt.Println(err)
+		return []uint64{}
+	}
+
+	return res
+}
+*/
+
+func ShiftUint64Array(dataArray []uint64, startIdx int, length int) ([]uint64, error) {
+	fmt.Println("ShiftUint64Array")
+
+	res := dataArray
+
+	return res, nil
+}
+
+func ExtractBitsFromUint64Array(dataArray []uint64, startIdx int, length int) ([]uint64, error) {
+	fmt.Println("ExtractBitsFromUint64Array")
+	if length == 0 {
+		fmt.Println("length is 0")
+		return []uint64{}, nil
+	}
+	inputBytesLen := len(dataArray) * 8
+	if inputBytesLen == 0 {
+		fmt.Println("inputBytesLen is 0")
+		return []uint64{}, nil
+	}
+	if startIdx >= inputBytesLen*8 {
+		fmt.Println("startIdx >= inputBytesLen * 8")
+		return []uint64{}, nil
+	}
+	if startIdx+length > inputBytesLen*8 {
+		fmt.Println("startIdx + length > inputBytesLen * 8")
+		return []uint64{}, nil
+	}
+	leftShiftBits := 0
+	res, err := CropUint64Array(dataArray, startIdx, length, &leftShiftBits)
+	if err != nil {
+		fmt.Println(err)
+		return []uint64{}, err
+	}
+
+	finalLeftShift := startIdx - leftShiftBits
+	fmt.Println("\tstartIdx: ", startIdx)
+	fmt.Println("\tleftShiftBits: ", leftShiftBits)
+	fmt.Println("\tfinalLeftShift: ", finalLeftShift)
+
+	res, err = ShiftUint64Array(res, finalLeftShift, length)
+	if err != nil {
+		fmt.Println(err)
+		return []uint64{}, err
+	}
+
+	return res, nil
+}
+
+func ConvertUint64ArrayToBytesArray(dataArray []uint64) []byte {
+	res := make([]byte, len(dataArray)*8)
+	for i := 0; i < len(dataArray); i++ {
+		binary.LittleEndian.PutUint64(res[i*8:], dataArray[i])
+	}
+	return res
+}
+
+func CropUint64Array(dataArray []uint64, startIdx int, length int, bitLeftCrop *int) ([]uint64, error) {
+	fmt.Println("CropUint64Array")
+
+	if length == 0 {
+		fmt.Println("length is 0")
+		return []uint64{}, nil
+	}
+	inputBytesLen := len(dataArray) * 8
+	if inputBytesLen == 0 {
+		fmt.Println("inputBytesLen is 0")
+		return []uint64{}, nil
+	}
+
+	startLen := len(dataArray)
+	res := fmt.Sprintf("len(dataArray): %d", startLen)
+	fmt.Println(res)
+
+	StartUint64Idx, EndUint64Idx := CalcBounds(startIdx, length)
+	if EndUint64Idx > startLen {
+		res = fmt.Sprintf("EndUint64Idx > startLen")
+		fmt.Println(res)
+		return nil, fmt.Errorf(res)
+	}
+	crop := dataArray[StartUint64Idx:EndUint64Idx]
+	res = fmt.Sprintf("len(crop): %d", len(crop))
+	fmt.Println(res)
+
+	return dataArray[StartUint64Idx:EndUint64Idx], nil
+}
+
+func CalcBounds(startIdx int, length int) (int, int) {
+	StartUint64Idx := CalcUint64Idx(startIdx)
+	sum := startIdx + length
+	str := fmt.Sprintf("startIdx: %d, length: %d, sum: %d", startIdx, length, sum)
+	fmt.Println(str)
+	EndUint64Idx := CalcUint64Idx(sum-1) + 1
+
+	res := fmt.Sprintf("StartUint64Idx: %d, EndUint64Idx: %d", StartUint64Idx, EndUint64Idx)
+	fmt.Println(res)
+	return StartUint64Idx, EndUint64Idx
+}
+
+func CalcUint64Idx(bitIdx int) int {
+	res := int(math.Floor(float64(bitIdx) / 64))
+	return res
+}
+
+func PrintUint64ArrayAsBinary(dataArray ...uint64) {
+	fmt.Println("Printing dataArray as binary")
+	for i := 0; i < len(dataArray); i++ {
+		fmt.Printf("%064b\t", dataArray[i])
+	}
+	fmt.Println()
+}
+
+// Func SanitizeUint64
+// Prende in input:
+// startUint64: un uint64
+// numBitsToWrite: il numero di bit da scrivere
+// Shifta a destra di 64 - numBitsToWrite e a sinistra di 64 - numBitsToWrite per assicurarsi che a destra dell'ultimo bit da scrivere ci siano solo zeri
+func SanitizeUint64(startUint64 uint64, numBitsToWrite uint8) (uint64, error) {
+	// calcolo il numero di bit da shiftare
+	shifts := uint64(64 - numBitsToWrite)
+	// shifto a destra di shifts
+	res := startUint64 >> shifts
+	// shifto a sinistra di shifts
+	// in questo modo a destra dell'ultimo bit da scrivere ci saranno solo zeri
+	res <<= shifts
+	return res, nil
+}
+
+/*
+// ShiftJoinUint64
+// Prende in input:
+// startUint - un uint64
+// uintToJoin - un uint64
+// startIdx - un intero - l'indice di partenza
+// length - un intero - la lunghezza del uintToJoin
+// overflow - un *uint64 - il puntatore a un uint64 che conterra nei primi bit alla parte shiftata di startUint
+// Ritorna:
+// un uint64 che contiene startUint shiftata a sinistra di startIdx unito a ai primi bit di uintToJoin
+// un errore se startIdx è minore di 0 o se startIdx + length è maggiore di 64
+func ShiftJoinUint64(startUint uint64, startIdx int, length int, overflow *uint64) (uint64, error) {
+	fmt.Println("ShiftJoinUint64")
+	var err error
+	if startIdx < 0 {
+		return 0, fmt.Errorf("startIdx è minore di 0")
+	}
+	if startIdx+length > 64 {
+		return 0, fmt.Errorf("startIdx + length è maggiore di 64")
+	}
+
+	// assegno a tempCopy la parte che verrà shiftata
+	tempCopy, err := RightShiftUint64(startUint, startIdx)
+	if err != nil {
+		return 0, err
+	}
+	// debug
+	// stampo a video tempCopy
+	PrintUint64ArrayAsBinary(tempCopy)
+
+	// assegno a res la parte dopo lo shift sinistro
+	tempRes, err := LeftShiftUint64(uintToJoin, startIdx)
+	if err != nil {
+		return 0, err
+	}
+	// debug
+	// stampo a video tempRes
+	PrintUint64ArrayAsBinary(tempRes)
+
+	// eseguo il join tra tempCopy e tempRes
+	res := tempCopy | tempRes
+	// debug
+	// stampo a video res
+	PrintUint64ArrayAsBinary(res)
+
+	// assegno a overflow tempCopy
+	*overflow = tempCopy
+	// debug
+	// stampo a video overflow
+	PrintUint64ArrayAsBinary(*overflow)
+
+	return res, nil
+}
+*/
+
+func RightShiftUint64(startUint64 uint64, lastIdx int) (uint64, error) {
+	fmt.Println("RightShiftUint64")
+	// controllo che lastIdx sia minore di 64
+	if lastIdx > 64 {
+		return 0, fmt.Errorf("lastIdx > 64")
+	}
+	// calcolo il numero di shift da effetuare
+	shifts := 64 - lastIdx
+	// ritorno il risultato dello shift
+	return startUint64 >> shifts, nil
+}
+
+func LeftShiftUint64(startUint64 uint64, startIdx int) (uint64, error) {
+	fmt.Println("LeftShiftUint64")
+	// controllo che startIdx sia minore di 64
+	if startIdx > 64 {
+		return 0, fmt.Errorf("startIdx > 64")
+	}
+	// ritorno il risultato dello shift
+	return startUint64 << startIdx, nil
 }
