@@ -16,7 +16,26 @@ func main() {
 	//EsempioLeftShiftUint64()
 
 	// TEST EsempioRightShiftUint64
-	EsempioRightShiftUint64()
+	//EsempioRightShiftUint64()
+
+	// TEST EsempioShiftJoinUint64
+	EsempioShiftUint64Array()
+}
+
+func EsempioShiftUint64Array() {
+	// Creo un []uint64 con due elementi 0x0 e 0xFF00000000000000
+	var input = []uint64{0x0, 0xFFFFFFFFFFFFFFFF, 0xFF00000000000000}
+	fmt.Print("\tinput: ")
+	utils.PrintUint64ArrayAsBinary(input...)
+	var err error
+	var res []uint64
+
+	res, err = utils.ShiftUint64Array(input, 7)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Print("\toutput: ")
+	utils.PrintUint64ArrayAsBinary(res...)
 }
 
 func EsempioRightShiftUint64() {

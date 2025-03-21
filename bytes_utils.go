@@ -237,11 +237,24 @@ func SanitizeUint64Array(dataArray []uint64, startIdx int, length int) []uint64 
 }
 */
 
-func ShiftUint64Array(dataArray []uint64, startIdx int, length int) ([]uint64, error) {
+func ShiftUint64Array(inputArray []uint64, startIdx int) ([]uint64, error) {
 	fmt.Println("ShiftUint64Array")
+	var temp uint64
+	var err error
+	var overflow uint64
+	var res []uint64
 
-	res := dataArray
-
+	// ciclo per shiftare di un 1 bit a sinistra tutti gli elementi dell'array
+	// partendo dall'ultimo
+	for i := len(inputArray) - 1; i >= 0; i-- {
+		fmt.Println("\t i = ", i)
+		temp, err = ShiftUint64(inputArray[i], startIdx, &overflow)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// aggiungo il risultato all'inizio dell'array
+		res = append([]uint64{temp}, res...)
+	}
 	return res, nil
 }
 
@@ -276,7 +289,7 @@ func ExtractBitsFromUint64Array(dataArray []uint64, startIdx int, length int) ([
 	fmt.Println("\tleftShiftBits: ", leftShiftBits)
 	fmt.Println("\tfinalLeftShift: ", finalLeftShift)
 
-	res, err = ShiftUint64Array(res, finalLeftShift, length)
+	res, err = ShiftUint64Array(res, finalLeftShift)
 	if err != nil {
 		fmt.Println(err)
 		return []uint64{}, err
@@ -341,7 +354,6 @@ func CalcUint64Idx(bitIdx int) int {
 }
 
 func PrintUint64ArrayAsBinary(dataArray ...uint64) {
-	fmt.Println("Printing dataArray as binary")
 	for i := 0; i < len(dataArray); i++ {
 		fmt.Printf("%064b\t", dataArray[i])
 	}
@@ -364,25 +376,18 @@ func SanitizeUint64(startUint64 uint64, numBitsToWrite uint8) (uint64, error) {
 	return res, nil
 }
 
-/*
-// ShiftJoinUint64
+// ShiftUint64
 // Prende in input:
-// startUint - un uint64
-// uintToJoin - un uint64
-// startIdx - un intero - l'indice di partenza
-// length - un intero - la lunghezza del uintToJoin
-// overflow - un *uint64 - il puntatore a un uint64 che conterra nei primi bit alla parte shiftata di startUint
+// startUint (uint64)
+// startIdx (int) l'indice di partenza
+// overflow (un *uint64) il puntatore a un uint64 che conterrà nei primi bit alla parte shiftata di startUint
 // Ritorna:
-// un uint64 che contiene startUint shiftata a sinistra di startIdx unito a ai primi bit di uintToJoin
+// un uint64 che contiene startUint shiftata a sinistra di startIdx unito a ai primi bit di overflow
 // un errore se startIdx è minore di 0 o se startIdx + length è maggiore di 64
-func ShiftJoinUint64(startUint uint64, startIdx int, length int, overflow *uint64) (uint64, error) {
-	fmt.Println("ShiftJoinUint64")
+func ShiftUint64(startUint uint64, startIdx int, overflow *uint64) (uint64, error) {
 	var err error
 	if startIdx < 0 {
 		return 0, fmt.Errorf("startIdx è minore di 0")
-	}
-	if startIdx+length > 64 {
-		return 0, fmt.Errorf("startIdx + length è maggiore di 64")
 	}
 
 	// assegno a tempCopy la parte che verrà shiftata
@@ -390,37 +395,24 @@ func ShiftJoinUint64(startUint uint64, startIdx int, length int, overflow *uint6
 	if err != nil {
 		return 0, err
 	}
-	// debug
-	// stampo a video tempCopy
-	PrintUint64ArrayAsBinary(tempCopy)
 
 	// assegno a res la parte dopo lo shift sinistro
-	tempRes, err := LeftShiftUint64(uintToJoin, startIdx)
+	tempRes, err := LeftShiftUint64(startUint, startIdx)
 	if err != nil {
 		return 0, err
 	}
-	// debug
-	// stampo a video tempRes
-	PrintUint64ArrayAsBinary(tempRes)
 
-	// eseguo il join tra tempCopy e tempRes
-	res := tempCopy | tempRes
-	// debug
-	// stampo a video res
-	PrintUint64ArrayAsBinary(res)
+	// eseguo il join tra tempRes e overflow
+	res := tempRes | *overflow
 
 	// assegno a overflow tempCopy
 	*overflow = tempCopy
-	// debug
-	// stampo a video overflow
-	PrintUint64ArrayAsBinary(*overflow)
 
 	return res, nil
 }
-*/
 
 func RightShiftUint64(startUint64 uint64, lastIdx int) (uint64, error) {
-	fmt.Println("RightShiftUint64")
+	//fmt.Println("RightShiftUint64")
 	// controllo che lastIdx sia minore di 64
 	if lastIdx > 64 {
 		return 0, fmt.Errorf("lastIdx > 64")
@@ -432,7 +424,7 @@ func RightShiftUint64(startUint64 uint64, lastIdx int) (uint64, error) {
 }
 
 func LeftShiftUint64(startUint64 uint64, startIdx int) (uint64, error) {
-	fmt.Println("LeftShiftUint64")
+	//fmt.Println("LeftShiftUint64")
 	// controllo che startIdx sia minore di 64
 	if startIdx > 64 {
 		return 0, fmt.Errorf("startIdx > 64")
