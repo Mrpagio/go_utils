@@ -302,6 +302,12 @@ func ReplaceBits(startData *[]byte, newBits []byte, startIdx uint64, length uint
 	finalBits := initialCleared | shiftNewUint64
 	fmt.Printf("finalBits: %064b\n", finalBits)
 
+	// converto finalBits in un array di byte
+	// creo un array di byte di lunghezza 8
+	res := make([]byte, 8)
+	binary.BigEndian.PutUint64(res, finalBits)
+
+	*startData = res[:lenStart]
 	return nil
 }
 
