@@ -241,7 +241,7 @@ func SanitizeUint64Array(dataArray []uint64, startIdx int, length int) []uint64 
 }
 */
 
-func ShiftUint64Array(inputArray []uint64, startIdx int) ([]uint64, error) {
+func ShiftUint64Array(inputArray []uint64, startIdx uint64) ([]uint64, error) {
 	fmt.Println("ShiftUint64Array")
 	var temp uint64
 	var err error
@@ -270,14 +270,14 @@ func ConvertUint64ArrayToBytesArray(dataArray []uint64) []byte {
 	return res
 }
 
-func ReplaceBits(startData *[]byte, newBits []byte, startIdx int, length int) error {
+func ReplaceBits(startData *[]byte, newBits []byte, startIdx uint64, length uint64) error {
 	// todo implmentare nel caso sia un multipacket
 	lenStart := len(*startData)
 	if lenStart > 8 {
 		return fmt.Errorf("ReplaceBits() -> multipacket non implementato")
 	}
 	lastIdx := startIdx + length
-	if lastIdx > lenStart*8 {
+	if lastIdx > uint64(lenStart*8) {
 		return fmt.Errorf("ReplaceBits() -> lastIdx > lenStart*8")
 	}
 
@@ -381,7 +381,7 @@ func SanitizeUint64(startUint64 uint64, numBitsToWrite uint8) (uint64, error) {
 // length: la lunghezza
 // Ritorna:
 // un uint64 con tutti 1 nella parte di startIdx e length e tutti 0 nel resto
-func SanitizeMaskUint64(startIdx int, length int) uint64 {
+func SanitizeMaskUint64(startIdx uint64, length uint64) uint64 {
 	fmt.Println("startIdx:", startIdx)
 	fmt.Println("length:", length)
 	mask := ^uint64(0)
@@ -403,7 +403,7 @@ func SanitizeMaskUint64(startIdx int, length int) uint64 {
 // Ritorna:
 // un uint64 che contiene startUint shiftata a sinistra di startIdx unito a ai primi bit di overflow
 // un errore se startIdx è minore di 0 o se startIdx + length è maggiore di 64
-func ShiftUint64(startUint uint64, startIdx int, overflow *uint64) (uint64, error) {
+func ShiftUint64(startUint uint64, startIdx uint64, overflow *uint64) (uint64, error) {
 	var err error
 	if startIdx < 0 {
 		return 0, fmt.Errorf("startIdx è minore di 0")
@@ -430,7 +430,7 @@ func ShiftUint64(startUint uint64, startIdx int, overflow *uint64) (uint64, erro
 	return res, nil
 }
 
-func RightShiftUint64(startUint64 uint64, lastIdx int) (uint64, error) {
+func RightShiftUint64(startUint64 uint64, lastIdx uint64) (uint64, error) {
 	//fmt.Println("RightShiftUint64")
 	// controllo che lastIdx sia minore di 64
 	if lastIdx > 64 {
@@ -442,7 +442,7 @@ func RightShiftUint64(startUint64 uint64, lastIdx int) (uint64, error) {
 	return startUint64 >> shifts, nil
 }
 
-func LeftShiftUint64(startUint64 uint64, startIdx int) (uint64, error) {
+func LeftShiftUint64(startUint64 uint64, startIdx uint64) (uint64, error) {
 	//fmt.Println("LeftShiftUint64")
 	// controllo che startIdx sia minore di 64
 	if startIdx > 64 {
