@@ -282,25 +282,25 @@ func ReplaceBits(startData *[]byte, newBits []byte, startIdx uint64, length uint
 	}
 
 	startUint64 := PackBigEndian(*startData)
-	fmt.Printf("uint64Data: %064b\n", startUint64)
+	//fmt.Printf("uint64Data: %064b\n", startUint64)
 
 	newUint64 := PackBigEndian(newBits)
-	fmt.Printf("newUint64: %064b\n", newUint64)
+	//fmt.Printf("newUint64: %064b\n", newUint64)
 	shiftNewUint64, err := RightShiftUint64(newUint64, 64-startIdx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("shiftNewUint64: %064b\n", shiftNewUint64)
+	//fmt.Printf("shiftNewUint64: %064b\n", shiftNewUint64)
 
 	// creo una maschera con tutti 1
 	mask := SanitizeMaskUint64(startIdx, length)
-	fmt.Printf("mask: %064b\n", mask)
+	//fmt.Printf("mask: %064b\n", mask)
 
 	initialCleared := startUint64 &^ mask
-	fmt.Printf("initialCleared: %064b\n", initialCleared)
+	//fmt.Printf("initialCleared: %064b\n", initialCleared)
 
 	finalBits := initialCleared | shiftNewUint64
-	fmt.Printf("finalBits: %064b\n", finalBits)
+	//fmt.Printf("finalBits: %064b\n", finalBits)
 
 	// converto finalBits in un array di byte
 	// creo un array di byte di lunghezza 8
@@ -344,12 +344,12 @@ func CropUint64Array(dataArray []uint64, startIdx int, length int, bitLeftCrop *
 func CalcBounds(startIdx int, length int) (int, int) {
 	StartUint64Idx := CalcUint64Idx(startIdx)
 	sum := startIdx + length
-	str := fmt.Sprintf("startIdx: %d, length: %d, sum: %d", startIdx, length, sum)
-	fmt.Println(str)
+	//str := fmt.Sprintf("startIdx: %d, length: %d, sum: %d", startIdx, length, sum)
+	//fmt.Println(str)
 	EndUint64Idx := CalcUint64Idx(sum-1) + 1
 
-	res := fmt.Sprintf("StartUint64Idx: %d, EndUint64Idx: %d", StartUint64Idx, EndUint64Idx)
-	fmt.Println(res)
+	//res := fmt.Sprintf("StartUint64Idx: %d, EndUint64Idx: %d", StartUint64Idx, EndUint64Idx)
+	//fmt.Println(res)
 	return StartUint64Idx, EndUint64Idx
 }
 
@@ -388,12 +388,12 @@ func SanitizeUint64(startUint64 uint64, numBitsToWrite uint8) (uint64, error) {
 // Ritorna:
 // un uint64 con tutti 1 nella parte di startIdx e length e tutti 0 nel resto
 func SanitizeMaskUint64(startIdx uint64, length uint64) uint64 {
-	fmt.Println("startIdx:", startIdx)
-	fmt.Println("length:", length)
+	//fmt.Println("startIdx:", startIdx)
+	//fmt.Println("length:", length)
 	mask := ^uint64(0)
 	// calcolo l'indice di fine
 	endIdx := startIdx + length
-	fmt.Println("endIdx:", endIdx)
+	//fmt.Println("endIdx:", endIdx)
 	// shifto a destra di 64 - length
 	mask >>= uint(64 - length)
 	// shifto a sinistra di 64 - length
@@ -469,7 +469,10 @@ func GetUnsignedBounds(size uint64) (uint64, uint64) {
 }
 
 func Uint64ToLittleEndian(startBigUint uint64) uint64 {
+	fmt.Println("\tUint64ToLittleEndian() -> startBigUint:", startBigUint)
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, startBigUint)
-	return binary.LittleEndian.Uint64(b)
+	res := binary.BigEndian.Uint64(b)
+	fmt.Println("\tUint64ToLittleEndian() -> res:", res)
+	return res
 }
