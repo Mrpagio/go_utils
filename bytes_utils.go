@@ -170,6 +170,10 @@ func PackLittleEndianBlocks(data []byte) []uint64 {
 }
 
 func PackBigEndian(data []byte) uint64 {
+	// aggiungo tanti byte 0 fino a raggiungere 8 byte
+	for i := len(data); i < 8; i++ {
+		data = append(data, 0)
+	}
 	return binary.BigEndian.Uint64(data)
 }
 
@@ -258,52 +262,47 @@ func ShiftUint64Array(inputArray []uint64, startIdx int) ([]uint64, error) {
 	return res, nil
 }
 
-func ExtractBitsFromUint64Array(dataArray []uint64, startIdx int, length int) ([]uint64, error) {
-	fmt.Println("ExtractBitsFromUint64Array")
-	if length == 0 {
-		fmt.Println("length is 0")
-		return []uint64{}, nil
-	}
-	inputBytesLen := len(dataArray) * 8
-	if inputBytesLen == 0 {
-		fmt.Println("inputBytesLen is 0")
-		return []uint64{}, nil
-	}
-	if startIdx >= inputBytesLen*8 {
-		fmt.Println("startIdx >= inputBytesLen * 8")
-		return []uint64{}, nil
-	}
-	if startIdx+length > inputBytesLen*8 {
-		fmt.Println("startIdx + length > inputBytesLen * 8")
-		return []uint64{}, nil
-	}
-	leftShiftBits := 0
-	res, err := CropUint64Array(dataArray, startIdx, length, &leftShiftBits)
-	if err != nil {
-		fmt.Println(err)
-		return []uint64{}, err
-	}
-
-	finalLeftShift := startIdx - leftShiftBits
-	fmt.Println("\tstartIdx: ", startIdx)
-	fmt.Println("\tleftShiftBits: ", leftShiftBits)
-	fmt.Println("\tfinalLeftShift: ", finalLeftShift)
-
-	res, err = ShiftUint64Array(res, finalLeftShift)
-	if err != nil {
-		fmt.Println(err)
-		return []uint64{}, err
-	}
-
-	return res, nil
-}
-
 func ConvertUint64ArrayToBytesArray(dataArray []uint64) []byte {
 	res := make([]byte, len(dataArray)*8)
 	for i := 0; i < len(dataArray); i++ {
 		binary.LittleEndian.PutUint64(res[i*8:], dataArray[i])
 	}
 	return res
+}
+
+func ReplaceBits(startData *[]byte, newBits []byte, startIdx int, length int) error {
+	// todo implmentare nel caso sia un multipacket
+	lenStart := len(*startData)
+	if lenStart > 8 {
+		return fmt.Errorf("ReplaceBits() -> multipacket non implementato")
+	}
+	lastIdx := startIdx + length
+	if lastIdx > lenStart*8 {
+		return fmt.Errorf("ReplaceBits() -> lastIdx > lenStart*8")
+	}
+
+	startUint64 := PackBigEndian(*startData)
+	fmt.Printf("uint64Data: %064b\n", startUint64)
+
+	newUint64 := PackBigEndian(newBits)
+	fmt.Printf("newUint64: %064b\n", newUint64)
+	shiftNewUint64, err := RightShiftUint64(newUint64, 64-startIdx)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("shiftNewUint64: %064b\n", shiftNewUint64)
+
+	// creo una maschera con tutti 1
+	mask := SanitizeMaskUint64(startIdx, length)
+	fmt.Printf("mask: %064b\n", mask)
+
+	initialCleared := startUint64 &^ mask
+	fmt.Printf("initialCleared: %064b\n", initialCleared)
+
+	finalBits := initialCleared | shiftNewUint64
+	fmt.Printf("finalBits: %064b\n", finalBits)
+
+	return nil
 }
 
 func CropUint64Array(dataArray []uint64, startIdx int, length int, bitLeftCrop *int) ([]uint64, error) {
@@ -374,6 +373,26 @@ func SanitizeUint64(startUint64 uint64, numBitsToWrite uint8) (uint64, error) {
 	// in questo modo a destra dell'ultimo bit da scrivere ci saranno solo zeri
 	res <<= shifts
 	return res, nil
+}
+
+// SanitizeMaskUint64
+// Prende in input:
+// startIdx: l'indice di partenza
+// length: la lunghezza
+// Ritorna:
+// un uint64 con tutti 1 nella parte di startIdx e length e tutti 0 nel resto
+func SanitizeMaskUint64(startIdx int, length int) uint64 {
+	fmt.Println("startIdx:", startIdx)
+	fmt.Println("length:", length)
+	mask := ^uint64(0)
+	// calcolo l'indice di fine
+	endIdx := startIdx + length
+	fmt.Println("endIdx:", endIdx)
+	// shifto a destra di 64 - length
+	mask >>= uint(64 - length)
+	// shifto a sinistra di 64 - length
+	mask <<= uint(64 - endIdx)
+	return mask
 }
 
 // ShiftUint64
