@@ -271,7 +271,7 @@ func ConvertUint64ArrayToBytesArray(dataArray []uint64) []byte {
 }
 
 func ReplaceBits(startData *[]byte, newBits []byte, startIdx uint64, length uint64) error {
-	// todo implmentare nel caso sia un multipacket
+	// todo implmentare x multipacket
 	lenStart := len(*startData)
 	if lenStart > 8 {
 		return fmt.Errorf("ReplaceBits() -> multipacket non implementato")
