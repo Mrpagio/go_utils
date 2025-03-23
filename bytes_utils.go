@@ -467,3 +467,9 @@ func GetSignedBounds(size uint64) (int64, int64) {
 func GetUnsignedBounds(size uint64) (uint64, uint64) {
 	return 0, uint64(math.Pow(float64(2), float64(size))) - 1
 }
+
+func Uint64ToLittleEndian(startBigUint uint64) uint64 {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, startBigUint)
+	return binary.LittleEndian.Uint64(b)
+}
