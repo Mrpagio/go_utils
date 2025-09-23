@@ -1,13 +1,31 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	utils "github.com/Mrpagio/go_utils"
 )
 
-// Voglio che nel main provare il funzionamento di ExtractBitsFromUint64Array
+// Voglio che nel main provare il funzionamento di BytesAsBinaryString
 
 func main() {
+	//creo un array di byte
+	input := []byte{0xFF, 0, 0, 0, 0, 0, 0, 0x3C}
+	fmt.Print("\tinput: ")
+	// converto input in un uint64
+	my_int := binary.BigEndian.Uint64(input)
+	fmt.Println(my_int)
+	utils.PrintUint64ArrayAsBinary(my_int)
+
+	// estraggo 4 bit a partire dal bit 58
+	res, err := utils.ExtractBitsFromUint64(my_int, 58, 4, binary.LittleEndian)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Print("\toutput: ")
+	fmt.Println(res)
+	utils.PrintUint64ArrayAsBinary(res)
+	fmt.Println()
 
 	// TEST ExtractBitsFromUint64Array
 	//EsempioExtractBitsFromUint64Array()
@@ -22,7 +40,7 @@ func main() {
 	//EsempioShiftUint64Array()
 
 	// TEST EsempioReplaceBits
-	EsempioReplaceBits()
+	//EsempioReplaceBits()
 }
 
 func EsempioReplaceBits() {
@@ -38,14 +56,14 @@ func EsempioReplaceBits() {
 	pack := utils.PackBigEndian(input)
 	fmt.Println("\tpack: ", pack)
 
-	newBytes := []byte{0x7E}
+	newBytes := []byte{0x7E, 0x00}
 	fmt.Print("\tnewBytes: ")
 	for _, b := range newBytes {
 		fmt.Printf("%08b ", b)
 	}
 	fmt.Println("")
 
-	err := utils.ReplaceBits(&input, newBytes, 8, 8)
+	err := utils.ReplaceBits(&input, newBytes, 8, 12)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -171,5 +189,4 @@ func EsempioLeftShiftUint64() {
 	}
 	// Stampo il numero in binario
 	utils.PrintUint64ArrayAsBinary(res)
-
 }
