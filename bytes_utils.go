@@ -476,3 +476,53 @@ func Uint64ToLittleEndian(startBigUint uint64) uint64 {
 	fmt.Println("\tUint64ToLittleEndian() -> res:", res)
 	return res
 }
+
+func Uint64ToBytesString(input uint64) string {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, input)
+	return BytesAsBinaryString(b...)
+}
+
+func ExtractBitsFromUint64(startData uint64, startBit uint32, size uint32, order binary.ByteOrder) (uint64, error) {
+	// calcolo la posizione dell'ultimo bit da estrarre
+	lastBit := startBit + size
+	fmt.Println("\tExtractBitsFromUint64() -> lastBit:", lastBit)
+	// shitfto a destra di 64-lastbit
+	rightShiftedData, err := RightShiftUint64(startData, uint64(lastBit))
+	if err != nil {
+		return 0, err
+	}
+	fmt.Print("\n\tExtractBitsFromUint64() -> rightShiftedData:")
+	PrintUint64ArrayAsBinary(rightShiftedData)
+	// calcolo il numero di bit da shiftare a sinistra
+
+	leftShiftedData, err := LeftShiftUint64(rightShiftedData, uint64(64-size))
+	if err != nil {
+		return 0, err
+	}
+	fmt.Print("\tExtractBitsFromUint64() -> leftShiftedData:")
+	PrintUint64ArrayAsBinary(leftShiftedData)
+
+	// calcolo il numero di byte del risultato
+	// approssimo l'intero per eccesso
+	numBytes := int(math.Ceil(float64(size) / 8.0))
+	fmt.Println("\tExtractBitsFromUint64() -> numBytes:", numBytes)
+
+	// converto leftShiftedData in un array di byte
+	// creo un array di byte di lunghezza 8
+	final := make([]byte, 8)
+	binary.BigEndian.PutUint64(final, leftShiftedData)
+	fmt.Println("\tExtractBitsFromUint64() -> final:", final)
+
+	res := uint64(0)
+
+	if order == binary.LittleEndian {
+		res = binary.LittleEndian.Uint64(final)
+	} else if order == binary.BigEndian {
+		res = binary.BigEndian.Uint64(final)
+	} else {
+		return 0, fmt.Errorf("ExtractBitsFromUint64() -> order non valido")
+	}
+
+	return res, nil
+}
